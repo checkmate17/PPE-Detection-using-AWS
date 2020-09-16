@@ -2,9 +2,9 @@
 
 ## Dashboard details:
 This is the plotly dash code for - PPE detection dashboard created from  simulated data. Following are details of the implementation:
-1. modified_capstone_simulation.ipynb : This file has the code for generating simulated non-compliant cases for 100 companies over 12 months. The output of this program is the simulated data stored in a "simulation_dash.csv" csv file.
+"modified_capstone_simulation.ipynb" : This file has the code for generating simulated non-compliant cases for 100 companies over 12 months. The output of this program is the simulated data stored in a "simulation_dash.csv" csv file.
 
-2. app-with-tabs.ipynb : This file has all the plotly dash code for the dashboard. Please see the explanation of each cell below:
+"app-with-tabs.ipynb" : This file has all the plotly dash code for the dashboard. Please see the explanation of each cell below:
 
   Cell 1: This cell has the code for importing all the dependencies (libraries). Also, has to code for creating the data dataframe from the simulated data csv.
   
