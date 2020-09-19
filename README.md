@@ -18,4 +18,16 @@ This is the plotly dash code for - PPE detection dashboard created from  simulat
   
   Cell 4: Code to Run the application.
   
-  ## Model Details:
+  
+## Model Details:
+  
+The AWS folder contains the code we have adapted for both the DeepLens and cloud-based lambda functions. For the latter, we included scripts for 2 main use cases: 
+
+1. Pretrained model for labels that already exist in Rekognition's catalogue (helmets and boots)
+2. Pretrained model + Custom Labels model that uses both Rekognition's catalogue and labels we have trained ourselves (masks and vests) 
+
+To run the second one, you are required to have your own custom labels and obtain an ARN to call the resource. For more details on how to call an API, please refer to this site: https://docs.aws.amazon.com/rekognition/latest/customlabels-dg/ex-lambda.html 
+
+You are also required to install Amazon's CLI in your computer: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
+
+Please note that Custom Labels are charged by the hour, so make sure to stop the resource to avoid incurring in additional charges.
