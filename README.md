@@ -1,4 +1,4 @@
-# capstone_ppe_detection_dash_dashboard
+# PPE Detection Using AWS
 
 ## Dashboard details:
 This is the plotly dash code for - PPE detection dashboard created from  simulated data. Following are details of the implementation:
