@@ -4,11 +4,11 @@ Current version supports:
     - multiple label detection
     - custom labels
 
-Label configuration can be done via Config class. The Constant
-class contains keys that are not expected to be changed while
-there is no need to change internal and external API.
+You are required to run the custom labels service in Amazon's
+Command Line Interface (CLI) before running this script
 
-The entry point is the lambda_handler function.
+Please follow these instructions:
+https://github.com/ruchikajulka/capstone_ppe_detection_using_AWS/tree/master/AWS/Cloud%20Lambda
 """
 
 
@@ -31,10 +31,10 @@ import boto3
 
 class Config:
     """ This structure represents configuration to be used further. """
-    # These are the ways Amazon identifies person.
-    PERSON_KEYS: List[str] = ['person', 'human', 'child']
-    MAX_LABELS: int = 40  # Limit on the amount of labels returned by Amazon.
-    MIN_CONFIDENCE: int = 60  # Confidence threshold for all Amazon returns.
+    # Rekognition will look for any of these words if they belong to its catalogue
+    PERSON_KEYS: List[str] = ['person', 'human']
+    MAX_LABELS: int = 30 # This can be changed
+    MIN_CONFIDENCE: int = 70 # It has work well after testing
 
     class GroupsPPE:
         """ Names for the supported groups. """
@@ -43,20 +43,22 @@ class Config:
         MASK: str = 'mask'
         BOOT: str = 'boot'
 
-    # For custom label detection, custom module should be running.
+    # Uncomment the PPE that will be used via Custom Labels
     TURNED_ON_CUSTOM_MODULES: List[str] = [
-        GroupsPPE.MASK
+        #GroupsPPE.VEST
+        #GroupsPPE.MASK
     ]
 
-    # For all custom labels, ARNs are supposed to be specified below.
+    # For all custom labels, ARNs must be configured.
     CUSTOM_LABEL_ARNS = {
-        GroupsPPE.VEST:
-            'arn:aws:rekognition:us-east-1:322876129806:project/capstone-aug30'
-            '/version/capstone-aug30.2020-08-30T18.31.51/1598826713522',
-        GroupsPPE.MASK:
-            'arn:aws:rekognition:us-east-1:488302376239:project'
-            '/masks-training-aug19/version'
-            '/masks-training-aug19.2020-08-19T15.33.34/1597865614999'
+        GroupsPPE.VEST: #mock ARN info - do not use
+            'arn:aws:rekognition:us-east-1:1234567892:project'
+            '/project-ppe-test/version'
+            '/project-ppe-test.2020-06-07T15.30.07/424536288'
+        GroupsPPE.MASK: #mock ARN info - do not use
+            'arn:aws:rekognition:us-east-1:1234567892:project'
+            '/project-ppe-test/version'
+            '/project-ppe-test.2020-06-07T15.30.07/424536288'
     }
 
     # The dict below follows the structure of first presenting
@@ -188,7 +190,9 @@ StatusCodes: Type[LambdaKeys.StatusCodes] = LambdaKeys.StatusCodes
 LambdaResponseKeys: Type[LambdaKeys.LambdaResponseKeys]
 LambdaResponseKeys = LambdaKeys.LambdaResponseKeys
 
-
+#A Lambda handler function processes events
+# It is ran by the runtime
+#Once it retunrs an answer, it will be available to handle another event
 def lambda_handler(event: dict, context: Any) -> Dict[str, Any]:
     """ Entry point: lambda execution begins here.  """
     setup_logging()
@@ -335,7 +339,7 @@ def if_intervals_intersect(lhs: Interval, rhs: Interval) -> bool:
 
 def if_boxes_intersect(lhs_box: BoundingBox, rhs_box: BoundingBox) -> bool:
     """ Checks if two boxes intersect. Two 2D rectangles intersect
-    iff their projections on both axes intersect. No assumption on
+    if their projections on both axes intersect. No assumption on
     the bounding box relative positions.
 
     Arguments:
@@ -371,16 +375,9 @@ class Person:
 
 
 class Stats:
-    """ Structure to store processed data and to
-    provide answers to a frequent queries, like
-    the population size, or who wears what type
-    of equipment.
-
-    Attributes:
-        population: list of persons found at the image
-        equipment2person: lists all persons wearing
-            particular key equipment group
-
+    """ This class provides population size,
+    who is wearing a specific type of PPE
+    and who is unequipped
     """
     def __init__(self, population: List[Person]):
         self.population: List[Person] = list()
@@ -403,7 +400,7 @@ class Stats:
         return self.population_size() - self.unequipped_size()
 
     def prepare_message(self) -> str:
-        """ Prepares and returns message with structure summary. """
+        """ Prepares and returns message with structured summary. """
         message: str = "Report: \nFound {} persons.\n".format(self.population_size())
         message += "Without equipment: {}.\n".format(self.unequipped_size())
         equipment_group: str
@@ -420,9 +417,7 @@ class Stats:
         return message
 
     def prepare_response(self, presigned_url: str) -> Dict[str, Any]:
-        """ Prepares and returns summary as a JSON-serializable object.
-        Arguments:
-            presigned_url: URL prepared by s3_client.generate_presigned_url()
+        """ Prepares and returns summary as JSON
 
         """
         response: Dict[str, Any] = dict()
